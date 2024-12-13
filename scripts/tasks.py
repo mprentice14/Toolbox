@@ -58,3 +58,4 @@ def git_commit(c):
     "Committing to Git"
     commit_message = input("Enter commit message: ")
     c.run(f"git commit -m '{commit_message}'")
+    
