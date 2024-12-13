@@ -1,23 +1,35 @@
-from invoke import tasks
+from invoke import task, UnexpectedExit
 import os
 import sys
 
 #------------------Brew Tasks------------------#
 
 @task
-def brew_outdated(c):
-    "Checking Brew for outdated packages"
-    c.run("brew outdated")
-
-@task
-def brew_update(c):
-    "Updating Brew"
-    c.run("brew update")
-
-@task
-def brew_upgrade(c):
-    "Upgrading Brew packages"
-    c.run("brew upgrade")
+def brew_manage(c):
+    "Managing Brew: checking for outdated packages, updating, and upgrading"
+    try:
+        c.run("brew outdated")
+        c.run("brew update")
+        c.run("brew upgrade")
+    except UnexpectedExit as e:
+        if "Cannot install terragrunt because conflicting formulae are installed" in e.result.stderr:
+            print("Conflicting formulae detected. Unlinking tgenv...")
+            c.run("brew unlink tgenv")
+            c.run("brew upgrade")
+        elif "Cannot install tgenv because conflicting formulae are installed" in e.result.stderr:
+            print("Conflicting formulae detected. Unlinking terragrunt...")
+            c.run("brew unlink terragrunt")
+            c.run("brew upgrade")
+        elif "Cannot install tfenv because conflicting formulae are installed" in e.result.stderr:
+            print("Conflicting formulae detected. Unlinking terraform...")
+            c.run("brew unlink terraform")
+            c.run("brew upgrade")
+        elif "Cannot install terraform because conflicting formulae are installed" in e.result.stderr:
+            print("Conflicting formulae detected. Unlinking tfenv...")
+            c.run("brew unlink tfenv")
+            c.run("brew upgrade")
+        else:
+            raise e
 
 #------------------Git Tasks------------------#
 
