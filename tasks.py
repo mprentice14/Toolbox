@@ -38,7 +38,7 @@ def git_status(c):
     "Check the status of the git repository"
     c.run("git status")
 
-@ttask
+@task
 def git_pull(c):
     "Pull changes from the remote repository"
     c.run("git pull origin main")
@@ -57,7 +57,7 @@ def git_commit(c):
 @task
 def git_push(c):
     "Push changes to the remote repository"
-    c.run("git pus")
+    c.run("git push origin main")
 
 @task
 def git_manage(c):
