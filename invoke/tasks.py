@@ -32,6 +32,32 @@ def brew_manage(c):
             raise e
 
 #------------------Git Tasks------------------#
+
+@task
+def git_status(c):
+    "Check the status of the git repository"
+    c.run("git status")
+
+#def git_checkout(c):
+#    "Checking out to master branch"
+#    branch = input("Enter branch name: ")
+#    c.run("git checkout -b '{branch}'")
+
+@task
+def git_add(c):
+    "Add all files to the git repository"
+    c.run("git add .")
+
+@task
+def git_commit(c):
+    "Commit changes to the git repository"
+    c.run('git commit -m "Commit message"')
+
+@task
+def git_push(c):
+    "Push changes to the remote repository"
+    c.run("git push")
+
 @task
 def git_manage(c):
     "Managing Git: checking status, adding all files, committing, pulling, checkout and pushing"
@@ -40,25 +66,3 @@ def git_manage(c):
     git_add(c)
     git_commit(c)
     git_push(c)
-
-def git_status(c):
-    "Checking Git status"
-    c.run("git status")
-
-def git_add(c):
-    "Adding all files to Git"
-    c.run("git add --all")
-
-def git_commit(c):
-    "Committing to Git"
-    commit_message = input("Enter commit message: ")
-    c.run(f"git commit -m '{commit_message}'")
-
-def git_push(c):
-    "Pushing to Git"
-    c.run("git push origin master")
-
-#def git_checkout(c):
-#    "Checking out to master branch"
-#    branch = input("Enter branch name: ")
-#    c.run("git checkout -b '{branch}'")
