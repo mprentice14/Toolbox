@@ -63,6 +63,7 @@ def git_push(c):
 def git_manage(c):
     "Managing Git: checking status, adding all files, committing, and pushing"
     git_status(c)
+    git_pull(c)
     git_add(c)
     git_commit(c)
     git_push(c)
