@@ -38,11 +38,6 @@ def git_status(c):
     "Check the status of the git repository"
     c.run("git status")
 
-#def git_checkout(c):
-#    "Checking out to master branch"
-#    branch = input("Enter branch name: ")
-#    c.run("git checkout -b '{branch}'")
-
 @task
 def git_add(c):
     "Add all files to the git repository"
@@ -51,7 +46,8 @@ def git_add(c):
 @task
 def git_commit(c):
     "Commit changes to the git repository"
-    c.run('git commit -m "Commit message"')
+    commit_message = input("Enter commit message: ")
+    c.run(f'git commit -m "{commit_message}"')
 
 @task
 def git_push(c):
@@ -60,9 +56,8 @@ def git_push(c):
 
 @task
 def git_manage(c):
-    "Managing Git: checking status, adding all files, committing, pulling, checkout and pushing"
+    "Managing Git: checking status, adding all files, committing, and pushing"
     git_status(c)
-    #git_checkout(c)
     git_add(c)
     git_commit(c)
     git_push(c)
