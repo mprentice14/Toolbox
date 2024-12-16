@@ -1,0 +1,27 @@
+name: 'Datadog Sythetics Helm Chart Refresh'
+
+on:
+    schedule:
+        - cron: '0 0 */14 * *'
+    workflow_dispatch:
+
+jobs:
+    datadog_synthetic_helm_chart_refresh:
+        runs-on: arc-scale-set
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v2
+
+            - name: Setup Python Environment
+              uses: actions/setup-python@v2
+              with:
+                python-version: '3.13'
+            
+            - name: Install Dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+            
+            - name: Update Helm Chart
+              run: python3 datadog_syntehtics_helm_refresh.py
