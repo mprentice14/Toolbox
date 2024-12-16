@@ -1,3 +1,5 @@
 Chart.yaml
 Chart-backup.yaml
 update_sythetic_agent.log
+*.txt
+main.yaml
