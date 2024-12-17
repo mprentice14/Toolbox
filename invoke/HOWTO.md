@@ -1,87 +1,144 @@
-# How to Use Invoke with `tasks.py` for Automation
+# **How to Use Invoke for Automation**
 
-This guide will help you use Invoke with the provided `tasks.py` script to automate common tasks like managing Homebrew packages and Git operations.
+This guide will help you set up and use **Invoke** to streamline repetitive tasks like managing Git, Homebrew, or any custom workflows using a `tasks.py` file.
 
-## Prerequisites
+---
 
-- **Python 3.x** installed (I use the latests 3.13)
-- **Invoke** library installed (`pip install invoke`)
-- `tasks.py` script in your project directory
+## **1. Install Invoke**
+Ensure you have `invoke` installed in your Python environment.
 
-## Installing Invoke
-
-If you haven't installed Invoke yet, run:
-
+Run:
 ```bash
 pip install invoke
 ```
 
-## Available Tasks
-
-The `tasks.py` script includes the following tasks:
-
-- `brew_manage`: Manages Homebrew packages (checks for outdated packages, updates, and upgrades)
-- `git_manage`: Automates Git operations (status, add, commit, push, and checkout)
-
-## Using Invoke
-
-### List All Tasks
-
-To see all available tasks, run:
-
+To verify:
 ```bash
-invoke -l
+invoke --version
 ```
 
-### Execute a Task
+---
 
-Replace `<task_name>` with the name of the task you want to run:
+## **2. Create Your `tasks.py` File**
+The `tasks.py` file contains all the commands you want to automate. Place it somewhere convenient (e.g., in your `~/Documents/Toolbox`).
 
-```bash
-invoke <task_name>
+Example `tasks.py`:
+```python
+from invoke import task
+
+@task
+def git_status(c):
+    """Check the status of the git repository"""
+    c.run("git status")
+
+@task
+def brew_manage(c):
+    """Manage Homebrew: check outdated, update, and upgrade"""
+    c.run("brew outdated")
+    c.run("brew update")
+    c.run("brew upgrade")
 ```
 
-For example, to manage Homebrew packages:
+---
 
+## **3. Add `tasks.py` to Your Search Path**
+To ensure Invoke knows where to find your `tasks.py` file:
+
+- Add the directory containing `tasks.py` to your `PYTHONPATH`:
+   ```bash
+   export PYTHONPATH="$PYTHONPATH:/path/to/your/tasks_directory"
+   ```
+
+   Example:
+   ```bash
+   export PYTHONPATH="$PYTHONPATH:/Users/username/Documents/Toolbox"
+   ```
+
+- (Optional) Add the line to your `~/.zshrc` or `~/.bashrc` for persistence.
+
+---
+
+## **4. Run Tasks Using Invoke**
+Invoke lets you run tasks by name.
+
+1. **List available tasks**:
+   ```bash
+   invoke --search-root=/path/to/your/tasks_directory --list
+   ```
+
+2. **Run a specific task**:
+   ```bash
+   invoke --search-root=/path/to/your/tasks_directory git-status
+   ```
+
+---
+
+## **5. Simplify with an Alias**
+To make it easier, add an alias to your shell configuration:
+
+1. Open `~/.zshrc` or `~/.bashrc`:
+   ```bash
+   nano ~/.zshrc
+   ```
+
+2. Add the alias:
+   ```bash
+   alias invoke-toolbox='invoke --search-root=/path/to/your/tasks_directory'
+   ```
+
+3. Reload your shell:
+   ```bash
+   source ~/.zshrc
+   ```
+
+Now you can use:
 ```bash
-invoke brew_manage
+invoke-toolbox --list
+invoke-toolbox git-status
 ```
 
-## Task Details
+---
 
-### `brew_manage`
+## **6. Share Your Tasks File**
+Encourage your teammates to:
 
-Manages Homebrew packages:
+1. Copy your `tasks.py` file to their preferred directory.
+2. Set up their `PYTHONPATH` and alias following this guide.
+3. Enjoy running automated tasks with **one simple command**.
 
-- Checks for outdated packages
-- Runs `brew update`
-- Runs `brew upgrade`
-- Handles conflicts by unlinking conflicting formulae if necessary
+---
 
-### `git_manage`
+### Example Workflow
+Imagine you need to:
+1. Check Git status.
+2. Pull the latest changes.
+3. Push your changes.
 
-Automates Git operations:
+You can define tasks like this:
+```python
+@task
+def git_pull(c):
+    """Pull changes from the remote repository"""
+    c.run("git pull")
 
-1. **Status**: Shows the current status (`git status`)
-2. **Checkout**: Prompts for a branch name and checks out to it (`git checkout -b 'branch_name'`)
-3. **Add**: Stages all changes (`git add --all`)
-4. **Commit**: Prompts for a commit message and commits (`git commit -m 'message'`)
-5. **Push**: Pushes to the `master` branch (`git push origin master`)
+@task
+def git_push(c):
+    """Push changes to the remote repository"""
+    c.run("git push")
 
-## Running Git Operations
-
-When you run:
-
-```bash
-invoke git_manage
+@task
+def git_manage(c):
+    """Manage Git: status, pull, and push"""
+    git_status(c)
+    git_pull(c)
+    git_push(c)
 ```
 
-You'll be prompted to:
+Then, just run:
+```bash
+invoke-toolbox git-manage
+```
 
-- Enter the branch name
-- Enter the commit message
+---
 
-## Notes
-
-- Ensure you have the necessary permissions for Git operations.
-- Make sure your local branch is up to date with the remote to avoid conflicts.
+Now you and your teammates can automate tasks easily! 🚀
