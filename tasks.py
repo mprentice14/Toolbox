@@ -57,7 +57,8 @@ def git_commit(c):
 @task
 def git_push(c):
     "Push changes to the remote repository"
-    c.run("git push origin main")
+    push_message = input("Enter push branch:")
+    c.run("git push origin {push_message}")
 
 @task
 def git_manage(c):
