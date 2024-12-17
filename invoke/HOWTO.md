@@ -100,7 +100,6 @@ invoke-toolbox git-status
 ---
 
 ## **6. Share Your Tasks File**
-Encourage your teammates to:
 
 1. Copy your `tasks.py` file to their preferred directory.
 2. Set up their `PYTHONPATH` and alias following this guide.
