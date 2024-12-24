@@ -61,6 +61,11 @@ def git_push(c):
     c.run("git push origin {push_message}")
 
 @task
+def git_pull_request(c):
+    "Create a new pull request"
+    c.run("gh pr create")
+
+@task
 def git_manage(c):
     "Managing Git: checking status, adding all files, committing, and pushing"
     git_status(c)
@@ -68,3 +73,5 @@ def git_manage(c):
     git_add(c)
     git_commit(c)
     git_push(c)
+
+    
