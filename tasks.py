@@ -61,9 +61,9 @@ def git_push(c):
     c.run("git push origin {push_message}")
 
 @task
-def git_pull_request(c):
+def git_pr(c):
     "Create a new pull request"
-    c.run("gh pr create")
+    c.run("gh pr create -d -f -a mprentice14 -r C@FO/devops,tbplayer7,jacob-m-barnes,travisfennel,rontoc2,kuldeep14327,someshsharma21,mprentice14")
 
 @task
 def git_manage(c):
@@ -73,5 +73,5 @@ def git_manage(c):
     git_add(c)
     git_commit(c)
     git_push(c)
-
+    git_pr(c)
     
