@@ -5,14 +5,17 @@ This guide will help you set up and use **Invoke** to streamline repetitive task
 ---
 
 ## **1. Install Invoke**
+
 Ensure you have `invoke` installed in your Python environment.
 
 Run:
+
 ```bash
 pip install invoke
 ```
 
 To verify:
+
 ```bash
 invoke --version
 ```
@@ -20,9 +23,11 @@ invoke --version
 ---
 
 ## **2. Create Your `tasks.py` File**
+
 The `tasks.py` file contains all the commands you want to automate. Place it somewhere convenient (e.g., in your `~/Documents/Toolbox`).
 
 Example `tasks.py`:
+
 ```python
 from invoke import task
 
@@ -42,14 +47,17 @@ def brew_manage(c):
 ---
 
 ## **3. Add `tasks.py` to Your Search Path**
+
 To ensure Invoke knows where to find your `tasks.py` file:
 
 - Add the directory containing `tasks.py` to your `PYTHONPATH`:
+
    ```bash
    export PYTHONPATH="$PYTHONPATH:/path/to/your/tasks_directory"
    ```
 
    Example:
+
    ```bash
    export PYTHONPATH="$PYTHONPATH:/Users/username/Documents/Toolbox"
    ```
@@ -59,14 +67,17 @@ To ensure Invoke knows where to find your `tasks.py` file:
 ---
 
 ## **4. Run Tasks Using Invoke**
+
 Invoke lets you run tasks by name.
 
 1. **List available tasks**:
+
    ```bash
    invoke --search-root=/path/to/your/tasks_directory --list
    ```
 
 2. **Run a specific task**:
+
    ```bash
    invoke --search-root=/path/to/your/tasks_directory git-status
    ```
@@ -74,24 +85,29 @@ Invoke lets you run tasks by name.
 ---
 
 ## **5. Simplify with an Alias**
+
 To make it easier, add an alias to your shell configuration:
 
 1. Open `~/.zshrc` or `~/.bashrc`:
+
    ```bash
    nano ~/.zshrc
    ```
 
 2. Add the alias:
+
    ```bash
    alias invoke-toolbox='invoke --search-root=/path/to/your/tasks_directory'
    ```
 
 3. Reload your shell:
+
    ```bash
    source ~/.zshrc
    ```
 
 Now you can use:
+
 ```bash
 invoke-toolbox --list
 invoke-toolbox git-status
@@ -108,12 +124,15 @@ invoke-toolbox git-status
 ---
 
 ### Example Workflow
+
 Imagine you need to:
+
 1. Check Git status.
 2. Pull the latest changes.
 3. Push your changes.
 
 You can define tasks like this:
+
 ```python
 @task
 def git_pull(c):
@@ -134,6 +153,7 @@ def git_manage(c):
 ```
 
 Then, just run:
+
 ```bash
 invoke-toolbox git-manage
 ```

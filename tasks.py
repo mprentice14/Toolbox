@@ -2,6 +2,30 @@ from invoke import task, UnexpectedExit
 import os
 import sys
 
+#-------------------Dictionary mapping cluster names to their ARNs-------------------#
+CLUSTERS = {
+    "eks-ap-south-1-non-prod": "arn:aws:eks:ap-south-1:442501350342:cluster/eks-ap-south-1-non-prod",
+    "eks-ap-south-1-prod": "arn:aws:eks:ap-south-1:442501350342:cluster/eks-ap-south-1-prod",
+    "eks-ap-south-1-testing": "arn:aws:eks:ap-south-1:442501350342:cluster/eks-ap-south-1-testing",
+    "eks-ap-south-2-non-prod": "arn:aws:eks:ap-south-2:442501350342:cluster/eks-ap-south-2-non-prod",
+    "eks-ap-south-2-prod": "arn:aws:eks:ap-south-2:442501350342:cluster/eks-ap-south-2-prod",
+    "eks-cn-north-1-non-prod": "arn:aws-cn:eks:cn-north-1:474022772791:cluster/eks-cn-north-1-non-prod",
+    "eks-cn-north-1-prod": "arn:aws-cn:eks:cn-north-1:474022772791:cluster/eks-cn-north-1-prod",
+    "eks-us-east-1-dr": "arn:aws:eks:us-east-1:442501350342:cluster/eks-us-east-1-dr",
+    "eks-us-west-2-non-prod": "arn:aws:eks:us-west-2:442501350342:cluster/eks-us-west-2-non-prod",
+    "eks-us-west-2-prod": "arn:aws:eks:us-west-2:442501350342:cluster/eks-us-west-2-prod",
+    "eks-us-west-2-testing": "arn:aws:eks:us-west-2:442501350342:cluster/eks-us-west-2-testing",
+    "gke_c2fo-application_asia-south1_gke-asia-south1-non-prod": "gke_c2fo-application_asia-south1_gke-asia-south1-non-prod",
+    "gke_c2fo-application_asia-south1_gke-asia-south1-prod": "gke_c2fo-application_asia-south1_gke-asia-south1-prod",
+    "gke_c2fo-application_europe-west1_europe-dr": "gke_c2fo-application_europe-west1_europe-dr",
+    "gke_c2fo-application_europe-west3_gke-europe-west3-non-prod": "gke_c2fo-application_europe-west3_gke-europe-west3-non-prod",
+    "gke_c2fo-application_europe-west3_gke-europe-west3-prod": "gke_c2fo-application_europe-west3_gke-europe-west3-prod",
+    "gke_c2fo-application_us-central1_us-central1-dr": "gke_c2fo-application_us-central1_us-central1-dr",
+    "gke_c2fo-application_us-west1_gke-us-west1-non-prod": "gke_c2fo-application_us-west1_gke-us-west1-non-prod",
+    "gke_c2fo-application_us-west1_gke-us-west1-prod": "gke_c2fo-application_us-west1_gke-us-west1-prod",
+    "gke_c2fo-application_us-west1_gke-us-west1-testing": "gke_c2fo-application_us-west1_gke-us-west1-testing",
+}
+
 #------------------Brew Tasks------------------#
 
 @task
@@ -41,7 +65,7 @@ def git_status(c):
 @task
 def git_pull(c):
     "Pull changes from the remote repository"
-    c.run("git pull origin main")
+    c.run("git pull origin master")
 
 @task
 def git_add(c):
@@ -69,9 +93,27 @@ def git_pr(c):
 def git_manage(c):
     "Managing Git: checking status, adding all files, committing, and pushing"
     git_status(c)
-    git_pull(c)
     git_add(c)
     git_commit(c)
     git_push(c)
     git_pr(c)
-    
+
+@task
+def switch_cluster(c, cluster_name):
+    "Switch to the specified EKS or GKE cluster"
+    if cluster_name not in CLUSTERS:
+        print(f"Cluster {cluster_name} not found.")
+        return
+
+    cluster_arn = CLUSTERS[cluster_name]
+    print(f"Switching to cluster: {cluster_name} ({cluster_arn})")
+
+    # Set the context for EKS clusters
+    if cluster_arn.startswith("arn:aws:eks"):
+        c.run(f"aws eks update-kubeconfig --name {cluster_name.split('/')[-1]} --region {cluster_arn.split(':')[3]}")
+    # Set the context for GKE clusters
+    elif cluster_arn.startswith("gke_"):
+        project, location, cluster = cluster_arn.split('_')[1:]
+        c.run(f"gcloud container clusters get-credentials {cluster} --zone {location} --project {project}")
+    else:
+        print(f"Unsupported cluster type for {cluster_name}")
