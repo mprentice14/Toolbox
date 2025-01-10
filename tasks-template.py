@@ -2,11 +2,6 @@ from invoke import task, UnexpectedExit
 import os
 import sys
 
-#-------------------Dictionary mapping cluster names to their ARNs-------------------#
-CLUSTERS = {
-'Add your clusters here': 'arn:aws:eks:region:account-id:cluster/cluster-name',
-}
-
 #------------------Brew Tasks------------------#
 
 @task
@@ -78,23 +73,3 @@ def git_manage(c):
     git_commit(c)
     git_push(c)
     git_pr(c)
-
-@task
-def switch_cluster(c, cluster_name):
-    "Switch to the specified EKS or GKE cluster"
-    if cluster_name not in CLUSTERS:
-        print(f"Cluster {cluster_name} not found.")
-        return
-
-    cluster_arn = CLUSTERS[cluster_name]
-    print(f"Switching to cluster: {cluster_name} ({cluster_arn})")
-
-    # Set the context for EKS clusters
-    if cluster_arn.startswith("arn:aws:eks"):
-        c.run(f"aws eks update-kubeconfig --name {cluster_name.split('/')[-1]} --region {cluster_arn.split(':')[3]}")
-    # Set the context for GKE clusters
-    elif cluster_arn.startswith("gke_"):
-        project, location, cluster = cluster_arn.split('_')[1:]
-        c.run(f"gcloud container clusters get-credentials {cluster} --zone {location} --project {project}")
-    else:
-        print(f"Unsupported cluster type for {cluster_name}")
