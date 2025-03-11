@@ -34,6 +34,18 @@ def brew_manage(c):
 #------------------Git Tasks------------------#
 
 @task
+def git_clone(c):
+    "Clone a repository"
+    repository_url = input("Enter the repository URL: ")
+    c.run(f"git clone {repository_url}")
+
+@task
+def git_checkout(c):
+    "Checkout a branch"
+    branch_name = input("Enter the branch name: ")
+    c.run(f"git checkout {branch_name}")
+
+@task
 def git_status(c):
     "Check the status of the git repository"
     c.run("git status")
@@ -73,3 +85,50 @@ def git_manage(c):
     git_commit(c)
     git_push(c)
     git_pr(c)
+
+#------------------Kubectl Tasks------------------#
+
+@task
+def kubectl_get_configs(c):
+    "Get the Kubernetes configurations"
+    c.run("kubectl config get-contexts")
+
+
+@task
+def kubectl_use_config(c):
+    "Use a Kubernetes configuration"
+    result = c.run("kubectl config get-contexts -o name", hide=True)
+    contexts = result.stdout.splitlines()
+    
+    if not contexts:
+        print("No contexts found.")
+        return
+    
+    print("Available contexts:")
+    for i, context in enumerate(contexts):
+        print(f"{i}: {context}")
+    
+    selected_index = int(input("Enter the number of the context you want to use: "))
+    
+    if selected_index < 0 or selected_index >= len(contexts):
+        print("Invalid selection.")
+        return
+    
+    selected_context = contexts[selected_index]
+    c.run(f"kubectl config use-context {selected_context}")
+
+@task
+def kubectl_get_namespaces(c):
+    "Get the namespaces in the Kubernetes cluster"
+    c.run("kubectl get namespaces")
+
+@task
+def kubectl_delete_namespace(c):
+    "Delete a namespace in the Kubernetes cluster"
+    namespace_name = input("Enter the namespace name: ")
+    c.run(f"kubectl delete namespace {namespace_name}")
+
+@task
+def kubectl_get_nodes(c):
+    "Get the nodes in the Kubernetes cluster"
+    c.run("kubectl get nodes")
