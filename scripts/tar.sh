@@ -15,7 +15,7 @@ echo "Select a directory to compress:"
 select dir in "${dirs[@]}"; do
     if [ -n "$dir" ]; then
         # Compress the selected directory and save the archive in /tmp/
-        if tar -czf "/tmp/${dir}.tar.gz" "$dir"; then
+        if tar -cvzf "/tmp/${dir}.tar.gz" "$dir"; then
             echo "Compressed $dir into /tmp/${dir}.tar.gz"
         else
             echo "Failed to compress $dir"
