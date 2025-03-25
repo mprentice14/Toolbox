@@ -185,6 +185,15 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         
+        /* Add disabled button style */
+        #spinButton:disabled {
+            background: linear-gradient(45deg, #cccccc 0%, #999999 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0.7;
+        }
+        
         #result {
             text-align: center;
             font-size: 2rem;
@@ -312,6 +321,8 @@
         const ctx = canvas.getContext('2d');
         // List of teammates - reversed to align with pointer at bottom
         const names = ['Ronnie', 'Jake', 'Kuldeep', 'Somesh', 'Matt', 'Jeff', 'Travis'];
+        // Add a set to track selected names
+        const selectedNames = new Set();
         const numSegments = names.length;
         const anglePerSegment = 2 * Math.PI / numSegments;
         const radius = 180;
@@ -673,14 +684,37 @@
             if (isSpinning) {
                 wheelMesh.rotation.z += angularVelocity * delta;
                 angularVelocity -= deceleration * delta;
+                
+                // Check if wheel is about to stop
+                if (angularVelocity <= 0.1) {
+                    // Calculate which name will be selected if we stop now
+                    const theta = (wheelMesh.rotation.z % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                    const alpha = (theta + Math.PI*3/2) % (2 * Math.PI);
+                    const segmentIndex = Math.floor(alpha / anglePerSegment);
+                    const potentialName = names[segmentIndex];
+                    
+                    // If name already selected, continue spinning but slower
+                    if (selectedNames.has(potentialName) && selectedNames.size < names.length) {
+                        // Give it a small boost to continue past this segment
+                        angularVelocity = Math.max(0.2, angularVelocity);
+                        deceleration = 0.05; // Slower deceleration to be more subtle
+                    }
+                }
+                
+                // Stop the wheel
                 if (angularVelocity <= 0) {
                     isSpinning = false;
                     angularVelocity = 0;
                     const theta = (wheelMesh.rotation.z % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                    // Change this line to align with the pointer at the top instead of bottom
                     const alpha = (theta + Math.PI*3/2) % (2 * Math.PI);
                     const segmentIndex = Math.floor(alpha / anglePerSegment);
                     const selectedName = names[segmentIndex];
+                    
+                    // Add to selected names set
+                    selectedNames.add(selectedName);
+                    console.log(`Selected: ${selectedName}, now have ${selectedNames.size}/${names.length} names`);
+                    
+                    // Update UI
                     const resultDiv = document.getElementById('result');
                     resultDiv.innerText = `🎉 ${selectedName}! 🎉`;
                     resultDiv.classList.add('show');
@@ -690,6 +724,9 @@
                     
                     // Start celebration effects
                     effectsManager.startCelebration(selectedName);
+                    
+                    // Update spin button state
+                    updateSpinButtonState();
                 }
             }
             renderer.render(scene, camera);
@@ -815,12 +852,47 @@
         }
         
         // Clear history button event
-        document.getElementById('clearHistory').addEventListener('click', clearHistory);
+        document.getElementById('clearHistory').addEventListener('click', () => {
+            clearHistory();
+            // Clear selected names and re-enable spin button
+            selectedNames.clear();
+            updateSpinButtonState();
+        });
         
-        // Load history on page load
+        // Load history on page load and update selectedNames set
         window.onload = function() {
             loadHistoryFromStorage();
+            
+            // Initialize selectedNames from existing history
+            const historyList = document.getElementById('historyList');
+            if (historyList.children.length > 0) {
+                Array.from(historyList.children).forEach(item => {
+                    const name = item.querySelector('span:first-child').textContent;
+                    selectedNames.add(name);
+                    console.log(`Added from history: ${name}`);
+                });
+            }
+            
+            console.log(`Loaded ${selectedNames.size}/${names.length} names from history`);
+            // Update button state based on loaded history
+            updateSpinButtonState();
         };
+
+        // Function to check if all names have been selected and update button state
+        function updateSpinButtonState() {
+            const spinButton = document.getElementById('spinButton');
+            
+            // Check if all names have been selected
+            if (selectedNames.size >= names.length) {
+                console.log("All names selected, disabling button");
+                spinButton.disabled = true;
+                spinButton.title = "All names have been selected. Clear history to spin again.";
+            } else {
+                console.log(`${selectedNames.size}/${names.length} names selected, button enabled`);
+                spinButton.disabled = false;
+                spinButton.title = "Spin the wheel to select a random name";
+            }
+        }
     </script>
 </body>
 </html>
