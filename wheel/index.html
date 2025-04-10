@@ -1054,11 +1054,41 @@
                     const segmentIndex = Math.floor(alpha / anglePerSegment);
                     const potentialName = names[segmentIndex];
                     
-                    // If name already selected, continue spinning but slower
+                    // If name already selected, continue spinning but FASTER
                     if (selectedNames.has(potentialName) && selectedNames.size < names.length) {
-                        // Give it a small boost to continue past this segment
-                        angularVelocity = Math.max(0.2, angularVelocity);
-                        deceleration = 0.05; // Slower deceleration to be more subtle
+                        // Special case for the last remaining name - direct guidance
+                        if (selectedNames.size == names.length - 1) {
+                            // Find the only unselected name
+                            let lastNameIndex = -1;
+                            for (let i = 0; i < names.length; i++) {
+                                if (!selectedNames.has(names[i])) {
+                                    lastNameIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (lastNameIndex >= 0) {
+                                // Calculate how many segments we need to travel
+                                let currentIndex = segmentIndex;
+                                let segmentsToTravel = (lastNameIndex - currentIndex + names.length) % names.length;
+                                
+                                // Apply a precise boost based on distance
+                                let targetVelocity = 0.3 + segmentsToTravel * 0.2; // Higher velocity for longer distance
+                                angularVelocity = targetVelocity;
+                                deceleration = 0.05 + segmentsToTravel * 0.02; // Slower deceleration for longer travel
+                                
+                                console.log(`Final name targeting: boosting to ${lastNameIndex} (${names[lastNameIndex]}) with velocity ${angularVelocity.toFixed(2)}`);
+                            }
+                        } else {
+                            // Original boosting logic for non-final selections
+                            const selectedRatio = selectedNames.size / names.length;
+                            const boostMultiplier = 1 + selectedRatio * 2;
+                            
+                            angularVelocity = Math.max(0.5, angularVelocity) * boostMultiplier;
+                            deceleration = 0.2;
+                            
+                            console.log(`Boosting past ${potentialName} with velocity ${angularVelocity.toFixed(2)}`);
+                        }
                     }
                 }
                 
@@ -1114,9 +1144,58 @@
                     console.log('Spin sound error:', e);
                 }
                 
-                isSpinning = true;
-                angularVelocity = 2 * Math.PI + Math.random() * Math.PI;
-                deceleration = 1 + Math.random() * 0.5;
+                // Special handling for the last name
+                if (selectedNames.size === names.length - 1) {
+                    // Find the last remaining name
+                    let lastRemainingName = null;
+                    let lastNameIndex = -1;
+                    
+                    for (let i = 0; i < names.length; i++) {
+                        if (!selectedNames.has(names[i])) {
+                            lastRemainingName = names[i];
+                            lastNameIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (lastRemainingName) {
+                        console.log(`Last remaining name: ${lastRemainingName} at index ${lastNameIndex}`);
+                        
+                        // Pre-determine the landing spot - get the current angle
+                        const currentAngle = wheelMesh.rotation.z % (2 * Math.PI);
+                        
+                        // Calculate the target angle for the last name
+                        // We want the last name to end at the bottom (3π/2 from the top)
+                        // But because we calculate from the top, we need to offset by π/2
+                        const targetSegmentCenter = lastNameIndex * anglePerSegment + (anglePerSegment / 2);
+                        // We need bottom position (3π/2) to align with the target segment
+                        const targetAngle = -targetSegmentCenter + (3 * Math.PI / 2);
+                        
+                        // Calculate how many full rotations + the target angle (between 2-4 full rotations)
+                        const fullRotations = 2 + Math.random() * 2; // 2-4 full rotations
+                        const totalAngleToRotate = fullRotations * (2 * Math.PI) + (targetAngle - currentAngle);
+                        
+                        console.log(`Current: ${currentAngle.toFixed(2)}, Target: ${targetAngle.toFixed(2)}, Total: ${totalAngleToRotate.toFixed(2)}`);
+                        
+                        // Set appropriate velocity and deceleration to reach that exact position
+                        // Higher velocity for more rotations, and deceleration tuned to stop at the right place
+                        isSpinning = true;
+                        angularVelocity = Math.max(2, totalAngleToRotate / 3); // Initial velocity based on distance
+                        deceleration = angularVelocity * angularVelocity / (2 * totalAngleToRotate); // Physics formula: v²=2ad
+                        
+                        console.log(`Forced final spin: velocity=${angularVelocity.toFixed(2)}, deceleration=${deceleration.toFixed(4)}`);
+                    } else {
+                        // Fallback to normal spinning
+                        isSpinning = true;
+                        angularVelocity = 2 * Math.PI + Math.random() * Math.PI;
+                        deceleration = 1 + Math.random() * 0.5;
+                    }
+                } else {
+                    // Normal spinning for names 1-6
+                    isSpinning = true;
+                    angularVelocity = 2 * Math.PI + Math.random() * Math.PI;
+                    deceleration = 1 + Math.random() * 0.5;
+                }
             }
         });
 
@@ -1389,85 +1468,6 @@
                 spinButton.title = "Spin the wheel to select a random name";
             }
         }
-    </script>
-</body> // Version management system
-</html> const versionManager = {
-            // Set this timestamp whenever you update the file
-            lastModified: '2023-06-27T12:00:00',
-            
-            // Initialize the version system
-            init() {
-                // Check if we have stored version data
-                const storedData = localStorage.getItem('wheelVersionData');
-                let versionData;
-                
-                if (storedData) {
-                    versionData = JSON.parse(storedData);
-                    
-                    // If there's a new modification, increment version
-                    if (versionData.lastModified !== this.lastModified) {
-                        console.log('New version detected');
-                        this.incrementVersion(versionData.version);
-                        versionData = {
-                            version: this.currentVersion,
-                            lastModified: this.lastModified
-                        };
-                        localStorage.setItem('wheelVersionData', JSON.stringify(versionData));
-                    }
-                } else {
-                    // First run, initialize with base version
-                    this.currentVersion = "3.1.0";
-                    versionData = {
-                        version: this.currentVersion,
-                        lastModified: this.lastModified
-                    };
-                    localStorage.setItem('wheelVersionData', JSON.stringify(versionData));
-                }
-                
-                // Display the current version
-                this.currentVersion = versionData.version;
-                this.updateVersionDisplay();
-            },
-            
-            // Increment the version number according to semantic versioning
-            incrementVersion(currentVersion) {
-                const parts = currentVersion.split('.');
-                let major = parseInt(parts[0], 10);
-                let minor = parseInt(parts[1], 10);
-                let patch = parseInt(parts[2], 10);
-                
-                // Increment patch version
-                patch++;
-                
-                // If patch reaches 10, increment minor and reset patch
-                if (patch > 9) {
-                    minor++;
-                    patch = 0;
-                    
-                    // If minor reaches 10, increment major and reset minor
-                    if (minor > 9) {
-                        major++;
-                        minor = 0;
-                    }
-                }
-                
-                this.currentVersion = `${major}.${minor}.${patch}`;
-                return this.currentVersion;
-            },
-            
-            // Update the version display in the UI
-            updateVersionDisplay() {
-                const versionElement = document.querySelector('.version');
-                if (versionElement) {
-                    versionElement.textContent = `v${this.currentVersion}`;
-                }
-            }
-        };
-        
-        // Initialize version tracking after the DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            versionManager.init();
-        });
     </script>
 </body>
 </html>
