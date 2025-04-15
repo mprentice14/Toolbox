@@ -75,7 +75,7 @@ def git_push(c):
 @task
 def git_pr(c):
     "Create a new pull request"
-    c.run("gh pr create -d -f -a mprentice14 -r C@FO/devops,tbplayer7,jacob-m-barnes,travisfennel,rontoc2,kuldeep14327,someshsharma21,mprentice14")
+    c.run("gh pr create -d -f -a mprentice14 -r C@FO/devops,tbplayer7,jacob-m-barnes,MonaFraise,rontoc2,kuldeep14327,someshsharma21,mprentice14")
 
 @task
 def git_manage(c):
